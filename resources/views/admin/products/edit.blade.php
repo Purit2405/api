@@ -1,131 +1,83 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="text-xl font-bold text-gray-800">
-            ✏️ แก้ไขสินค้า
-        </h2>
-    </x-slot>
+<x-slot name="header">
+    <h2 class="text-xl font-bold">แก้ไขสินค้า</h2>
+</x-slot>
 
-    <div class="py-8">
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow">
+<div class="p-6 max-w-4xl mx-auto">
+<form method="POST"
+      action="{{ route('admin.products.update',$product) }}"
+      enctype="multipart/form-data"
+      class="space-y-4 bg-white p-6 rounded shadow">
 
-            {{-- Error --}}
-            @if ($errors->any())
-                <div class="mb-4 bg-red-50 border border-red-200 text-red-700 p-4 rounded">
-                    <ul class="list-disc list-inside text-sm">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+@csrf
+@method('PUT')
 
-            <form method="POST"
-                  action="{{ route('admin.products.update', $product) }}"
-                  enctype="multipart/form-data"
-                  class="space-y-5">
+<div>
+    <label>หมวดหมู่</label>
+    <select name="category_id" class="w-full border rounded p-2">
+        @foreach($categories as $cat)
+            <option value="{{ $cat->id }}"
+                @selected($product->category_id == $cat->id)>
+                {{ $cat->name }}
+            </option>
+        @endforeach
+    </select>
+</div>
 
-                @csrf
-                @method('PUT')
+<div>
+    <label>ชื่อสินค้า</label>
+    <input name="name"
+           value="{{ $product->name }}"
+           class="w-full border rounded p-2">
+</div>
 
-                {{-- หมวดหมู่ --}}
-                <div>
-                    <label class="block text-sm font-medium mb-1">
-                        หมวดหมู่สินค้า
-                    </label>
-                    <select name="category_id"
-                            class="w-full border rounded p-2"
-                            required>
-                        @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}"
-                                @selected($product->category_id == $cat->id)>
-                                {{ $cat->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+<div>
+    <label>รายละเอียด</label>
+    <textarea name="description"
+              class="w-full border rounded p-2">{{ $product->description }}</textarea>
+</div>
 
-                {{-- ชื่อ --}}
-                <div>
-                    <label class="block text-sm font-medium mb-1">
-                        ชื่อสินค้า
-                    </label>
-                    <input type="text"
-                           name="name"
-                           value="{{ old('name', $product->name) }}"
-                           class="w-full border rounded p-2"
-                           required>
-                </div>
+<div>
+    <label>ราคา (บาท)</label>
+    <input type="number"
+           step="0.01"
+           name="price"
+           value="{{ $product->price }}"
+           class="w-full border rounded p-2">
+</div>
 
-                {{-- รายละเอียด --}}
-                <div>
-                    <label class="block text-sm font-medium mb-1">
-                        รายละเอียดสินค้า
-                    </label>
-                    <textarea name="description"
-                              rows="3"
-                              class="w-full border rounded p-2">{{ old('description', $product->description) }}</textarea>
-                </div>
+<div>
+    <label>แต้มที่ใช้แลก</label>
+    <input type="number"
+           name="points_required"
+           value="{{ $product->points_required }}"
+           class="w-full border rounded p-2">
+</div>
 
-                {{-- ราคา --}}
-                <div>
-                    <label class="block text-sm font-medium mb-1">
-                        ราคา (บาท)
-                    </label>
-                    <input type="number"
-                           name="price"
-                           value="{{ old('price', $product->price) }}"
-                           step="0.01"
-                           min="0"
-                           class="w-full border rounded p-2"
-                           required>
-                </div>
+<div class="flex items-center gap-2">
+    <input type="checkbox" name="redeemable" value="1"
+        @checked($product->redeemable)>
+    <label>เปิดให้แลกด้วยแต้ม</label>
+</div>
 
-                {{-- สถานะ --}}
-                <div>
-                    <label class="block text-sm font-medium mb-1">
-                        สถานะสินค้า
-                    </label>
-                    <select name="is_active"
-                            class="w-full border rounded p-2">
-                        <option value="1" @selected($product->is_active)>
-                            เปิดใช้งาน
-                        </option>
-                        <option value="0" @selected(!$product->is_active)>
-                            ปิดการแสดงผล
-                        </option>
-                    </select>
-                </div>
+<div class="flex items-center gap-2">
+    <input type="checkbox" name="is_active" value="1"
+        @checked($product->is_active)>
+    <label>เปิดการใช้งานสินค้า</label>
+</div>
 
-                {{-- รูปสินค้า --}}
-                <div>
-                    <label class="block text-sm font-medium mb-1">
-                        รูปสินค้า
-                    </label>
+@if($product->image)
+    <img src="{{ asset('storage/'.$product->image) }}" class="w-24">
+@endif
 
-                    @if($product->image)
-                        <img src="{{ asset('storage/'.$product->image) }}"
-                             class="w-24 h-24 object-cover rounded mb-2 border">
-                    @endif
+<div>
+    <input type="file" name="image">
+</div>
 
-                    <input type="file"
-                           name="image"
-                           accept="image/*"
-                           class="block w-full text-sm text-gray-600">
-                </div>
+<button class="bg-indigo-600 text-white px-4 py-2 rounded">
+    อัปเดต
+</button>
 
-                {{-- ปุ่ม --}}
-                <div class="flex justify-end gap-2 pt-4">
-                    <a href="{{ route('admin.products.index') }}"
-                       class="px-4 py-2 border rounded text-gray-700">
-                        ยกเลิก
-                    </a>
-
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                        💾 อัปเดตสินค้า
-                    </button>
-                </div>
-
-            </form>
-        </div>
-    </div>
+</form>
+</div>
 </x-app-layout>

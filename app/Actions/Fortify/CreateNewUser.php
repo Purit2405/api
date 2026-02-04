@@ -31,7 +31,7 @@ class CreateNewUser implements CreatesNewUsers
             'email' => $input['email'],
             'phone' => $input['phone'],
             'password' => Hash::make($input['password']),
-            'role' => 'admin', // 🔴 บังคับเป็น admin
+            'role' => 'user', // 🔴 บังคับเป็น admin
         ]);
     }
 }

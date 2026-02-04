@@ -25,63 +25,79 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'image' => 'nullable|image|max:2048',
+            'category_id'     => 'required|exists:categories,id',
+            'name'            => 'required|string|max:255',
+            'description'     => 'nullable|string',
+            'price'           => 'required|numeric|min:0',
+            'points_required' => 'nullable|integer|min:0',
+            'redeemable'      => 'boolean',
+            'image'           => 'nullable|image|max:2048',
         ]);
 
+        $data['redeemable'] = $request->has('redeemable');
+        $data['is_active']  = true; // ค่าเริ่มต้น เปิดสินค้า
+
         if ($request->hasFile('image')) {
+            $category = Category::find($data['category_id']);
             $data['image'] = $request->file('image')
-                ->store("products/{$data['category_id']}", 'public');
+                ->store('products/'.$category->slug, 'public');
         }
 
         Product::create($data);
 
-        return redirect()
-            ->route('admin.products.index')
-            ->with('success', 'เพิ่มสินค้าเรียบร้อย');
+        return redirect()->route('admin.products.index');
     }
 
     public function edit(Product $product)
     {
         $categories = Category::all();
-        return view('admin.products.edit', compact('product', 'categories'));
+        return view('admin.products.edit', compact('product','categories'));
     }
 
     public function update(Request $request, Product $product)
     {
         $data = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'image' => 'nullable|image|max:2048',
-            'is_active' => 'required|boolean',
+            'category_id'     => 'required|exists:categories,id',
+            'name'            => 'required|string|max:255',
+            'description'     => 'nullable|string',
+            'price'           => 'required|numeric|min:0',
+            'points_required' => 'nullable|integer|min:0',
+            'redeemable'      => 'boolean',
+            'image'           => 'nullable|image|max:2048',
         ]);
 
-        if ($request->hasFile('image')) {
+        $data['redeemable'] = $request->has('redeemable');
 
+        if ($request->hasFile('image')) {
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
 
+            $category = Category::find($data['category_id']);
             $data['image'] = $request->file('image')
-                ->store("products/{$data['category_id']}", 'public');
+                ->store('products/'.$category->slug, 'public');
         }
 
         $product->update($data);
 
-        return redirect()
-            ->route('admin.products.index')
-            ->with('success', 'แก้ไขสินค้าเรียบร้อย');
+        return redirect()->route('admin.products.index');
     }
 
+    /** เปิด / ปิดสินค้า */
     public function toggle(Product $product)
     {
         $product->update([
             'is_active' => ! $product->is_active
+        ]);
+
+        return back();
+    }
+
+    /** เปิด / ปิดการแลกแต้ม */
+    public function toggleRedeem(Product $product)
+    {
+        $product->update([
+            'redeemable' => ! $product->redeemable
         ]);
 
         return back();

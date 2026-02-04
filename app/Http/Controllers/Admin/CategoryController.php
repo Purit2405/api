@@ -25,7 +25,7 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|mimes:svg,svg+xml|max:2048',
         ]);
 
         $imagePath = null;
@@ -54,7 +54,7 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|mimes:svg,svg+xml|max:2048',
         ]);
 
         $data = [
