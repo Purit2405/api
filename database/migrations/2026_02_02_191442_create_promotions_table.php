@@ -18,7 +18,7 @@ return new class extends Migration {
 
             // 🔥 ระบบจำกัดสิทธิ์
             $table->integer('max_total')->nullable();     // ทั้งระบบ
-            $table->integer('max_per_user')->nullable();  // ต่อคน
+            $table->integer('max_per_user')->nullable();  // ต่อคนต่อครั้ง
 
             $table->string('image')->nullable();
             $table->boolean('is_active')->default(true);

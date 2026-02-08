@@ -10,31 +10,33 @@ use Illuminate\Http\Request;
 |--------------------------------------------------------------------------
 */
 
-// Admin
+// ===== Admin Controllers =====
 use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\PointTransactionController;
 
-// User
+// ===== User Controllers =====
 use App\Http\Controllers\User\DashboardController;
 use App\Http\Controllers\User\RedeemController;
+use App\Http\Controllers\User\CategoryController as UserCategoryController;
 
 /*
 |--------------------------------------------------------------------------
 | Public Routes
 |--------------------------------------------------------------------------
 */
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn () => view('welcome'));
+
+Route::view('/terms', 'terms')->name('terms');
+Route::view('/privacy', 'privacy')->name('privacy');
 
 /*
 |--------------------------------------------------------------------------
-| Redirect Dashboard ตาม Role
+| Dashboard Redirect ตาม Role
 |--------------------------------------------------------------------------
 */
 Route::middleware([
@@ -42,11 +44,13 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->get('/dashboard', function () {
+
     return match (Auth::user()->role) {
         'admin' => redirect()->route('admin.dashboard'),
         'staff' => redirect()->route('staff.dashboard'),
         default => redirect()->route('user.dashboard'),
     };
+
 })->name('dashboard');
 
 /*
@@ -61,79 +65,70 @@ Route::middleware([
     'admin',
 ])->prefix('admin')->name('admin.')->group(function () {
 
-    /* ================= Dashboard ================= */
+    /* ===== Dashboard ===== */
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])
         ->name('dashboard');
 
-    /* ================= Categories ================= */
-    Route::resource('categories', CategoryController::class)
+    /* ===== Categories ===== */
+    Route::resource('categories', AdminCategoryController::class)
         ->except(['show', 'destroy']);
 
-    Route::patch('categories/{category}/toggle',
-        [CategoryController::class, 'toggle']
-    )->name('categories.toggle');
+    Route::patch('categories/{category}/toggle', [
+        AdminCategoryController::class, 'toggle'
+    ])->name('categories.toggle');
 
-    /* ================= Products ================= */
+    /* ===== Products ===== */
     Route::resource('products', ProductController::class)
         ->except(['show', 'destroy']);
 
-    // เปิด / ปิดการแสดงสินค้า (user จะไม่เห็น)
-    Route::patch('products/{product}/toggle',
-        [ProductController::class, 'toggle']
-    )->name('products.toggle');
+    Route::patch('products/{product}/toggle', [
+        ProductController::class, 'toggle'
+    ])->name('products.toggle');
 
-    // เปิด / ปิดการแลกแต้ม (สินค้าแสดง แต่แลกไม่ได้)
-    Route::patch('products/{product}/toggle-redeem',
-        [ProductController::class, 'toggleRedeem']
-    )->name('products.toggleRedeem');
+    Route::patch('products/{product}/toggle-redeem', [
+        ProductController::class, 'toggleRedeem'
+    ])->name('products.toggleRedeem');
 
-    /* ================= Promotions ================= */
+    /* ===== Promotions ===== */
     Route::resource('promotions', PromotionController::class)
-        ->except(['show', 'destroy']);
+        ->except(['show']);
 
-    /* ================= Banners ================= */
+    Route::patch('promotions/{promotion}/toggle', [
+        PromotionController::class, 'toggle'
+    ])->name('promotions.toggle');
+
+    /* ===== Banners ===== */
     Route::resource('banners', BannerController::class)
         ->except(['show', 'destroy']);
 
-    /* ================= News ================= */
+    Route::patch('banners/{banner}/toggle', [
+        BannerController::class, 'toggle'
+    ])->name('banners.toggle');
+
+    /* ===== News ===== */
     Route::resource('news', NewsController::class)
-        ->except(['show', 'destroy']);
+        ->except(['show']);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Point Transactions ⭐
-    |--------------------------------------------------------------------------
-    */
+    Route::patch('news/{news}/toggle', [
+        NewsController::class, 'toggle'
+    ])->name('news.toggle');
 
-    // ประวัติแต้ม
-    Route::get('/point-transactions',
-        [PointTransactionController::class, 'index']
-    )->name('point-transactions.index');
+    /* ===== Point Transactions ===== */
+    Route::get('point-transactions', [
+        PointTransactionController::class, 'index'
+    ])->name('point-transactions.index');
 
-    // หน้าเพิ่มแต้ม
-    Route::get('/point-transactions/create',
-        [PointTransactionController::class, 'create']
-    )->name('point-transactions.create');
+    Route::get('point-transactions/create', [
+        PointTransactionController::class, 'create'
+    ])->name('point-transactions.create');
 
-    // บันทึกเพิ่มแต้ม
-    Route::post('/point-transactions',
-        [PointTransactionController::class, 'store']
-    )->name('point-transactions.store');
+    Route::post('point-transactions', [
+        PointTransactionController::class, 'store'
+    ])->name('point-transactions.store');
 
-    // ค้นหาผู้ใช้จากเบอร์ (AJAX)
-    Route::get('/point-transactions/find-user', function (Request $request) {
-        $user = \App\Models\User::where('phone', $request->phone)->first();
-
-        if (!$user) {
-            return response()->json(['found' => false]);
-        }
-
-        return response()->json([
-            'found' => true,
-            'name'  => $user->name,
-        ]);
-    })->name('point-transactions.find-user');
-
+    Route::get('point-transactions/find-user', [
+        PointTransactionController::class, 'findUser'
+    ])->name('point-transactions.find-user');
 });
 
 /*
@@ -147,17 +142,21 @@ Route::middleware([
     'verified',
 ])->prefix('user')->name('user.')->group(function () {
 
-    // Dashboard ผู้ใช้
+    /* ===== Dashboard ===== */
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
-    // แลกสินค้า
-    Route::post('/redeem/product/{id}',
-        [RedeemController::class, 'redeemProduct']
-    )->name('redeem.product');
+    /* ===== Redeem ===== */
+    Route::post('/redeem/product/{product}', [
+        RedeemController::class, 'redeemProduct'
+    ])->name('redeem.product');
 
-    // แลกโปรโมชั่น
-    Route::post('/redeem/promotion/{id}',
-        [RedeemController::class, 'redeemPromotion']
-    )->name('redeem.promotion');
+    Route::post('/redeem/promotion/{promotion}', [
+        RedeemController::class, 'redeemPromotion'
+    ])->name('redeem.promotion');
+
+    /* ===== Categories (User View) ===== */
+    Route::get('/categories/{category}', [
+        UserCategoryController::class, 'show'
+    ])->name('categories.show');
 });

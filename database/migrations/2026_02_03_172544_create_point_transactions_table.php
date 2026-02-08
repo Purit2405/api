@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('point_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->enum('type', ['earn', 'redeem']);
+            $table->enum('type', ['reward', 'redeem', 'adjust']);
             $table->enum('source_type', ['product', 'promotion', 'manual'])->nullable();
             $table->unsignedBigInteger('source_id')->nullable();
             $table->integer('points');

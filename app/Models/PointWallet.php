@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Models\PointTransaction;
 
 class PointWallet extends Model
 {
@@ -27,16 +28,14 @@ class PointWallet extends Model
 
     public function transactions()
     {
-        return $this->hasMany(PointTransaction::class, 'user_id', 'user_id');
+        return $this->hasMany(PointTransaction::class, 'user_id', 'user_id')
+            ->latest();
     }
 
     /* =======================
      | Static Helper
      ======================= */
 
-    /**
-     * ดึง wallet ของ user (ถ้าไม่มีจะสร้างให้)
-     */
     public static function ofUser(int $userId): self
     {
         return self::firstOrCreate(
@@ -54,19 +53,24 @@ class PointWallet extends Model
      */
     public function addPoints(
         int $points,
-        string $type = 'earn',
-        ?string $sourceType = null,
+        string $type = PointTransaction::TYPE_REWARD,
+        string $sourceType = PointTransaction::SOURCE_MANUAL,
         ?int $sourceId = null,
         ?string $description = null
     ): void {
-        DB::transaction(function () use ($points, $type, $sourceType, $sourceId, $description) {
+        DB::transaction(function () use (
+            $points, $type, $sourceType, $sourceId, $description
+        ) {
+            $wallet = self::where('id', $this->id)
+                ->lockForUpdate()
+                ->first();
 
-            $this->increment('balance', $points);
+            $wallet->increment('balance', $points);
 
             PointTransaction::create([
-                'user_id'     => $this->user_id,
+                'user_id'     => $wallet->user_id,
                 'type'        => $type,
-                'source_type' => $sourceType,
+                'source_type' => $sourceType, // ✅ string enum เท่านั้น
                 'source_id'   => $sourceId,
                 'points'      => $points,
                 'description' => $description,
@@ -75,27 +79,32 @@ class PointWallet extends Model
     }
 
     /**
-     * ใช้แต้ม (แลกสินค้า / โปรโมชั่น)
+     * ใช้แต้ม
      */
     public function spendPoints(
         int $points,
-        string $type = 'redeem',
-        ?string $sourceType = null,
+        string $type = PointTransaction::TYPE_REDEEM,
+        string $sourceType = PointTransaction::SOURCE_MANUAL,
         ?int $sourceId = null,
         ?string $description = null
     ): void {
-        if ($this->balance < $points) {
-            throw new \Exception('แต้มไม่เพียงพอ');
-        }
+        DB::transaction(function () use (
+            $points, $type, $sourceType, $sourceId, $description
+        ) {
+            $wallet = self::where('id', $this->id)
+                ->lockForUpdate()
+                ->first();
 
-        DB::transaction(function () use ($points, $type, $sourceType, $sourceId, $description) {
+            if ($wallet->balance < $points) {
+                throw new \Exception('แต้มไม่เพียงพอ');
+            }
 
-            $this->decrement('balance', $points);
+            $wallet->decrement('balance', $points);
 
             PointTransaction::create([
-                'user_id'     => $this->user_id,
+                'user_id'     => $wallet->user_id,
                 'type'        => $type,
-                'source_type' => $sourceType,
+                'source_type' => $sourceType, // ✅
                 'source_id'   => $sourceId,
                 'points'      => -$points,
                 'description' => $description,

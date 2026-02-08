@@ -8,6 +8,7 @@ class News extends Model
 {
     protected $fillable = [
         'title',
+        'content',
         'image',
         'publish_date',
         'is_active',

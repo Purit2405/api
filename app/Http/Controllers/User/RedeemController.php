@@ -3,89 +3,95 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\Product;
 use App\Models\Promotion;
+use App\Models\PromotionUsage;
 use App\Models\PointWallet;
-use Illuminate\Http\JsonResponse;
+use App\Models\PointTransaction;
 
 class RedeemController extends Controller
 {
-    /**
-     * 🛒 แลกสินค้า
-     */
-    public function redeemProduct(int $id): JsonResponse
+    /* ===============================
+     | แลกสินค้า
+     =============================== */
+    public function redeemProduct($id)
     {
-        $user = auth()->user();
-
-        $product = Product::with('category')->findOrFail($id);
-
-        // ตรวจสอบสถานะสินค้า + หมวดหมู่
-        if (
-            ! $product->is_active ||
-            ! $product->category ||
-            ! $product->category->is_active
-        ) {
-            return response()->json([
-                'message' => 'รายการนี้ยังไม่เปิดให้แลก'
-            ], 403);
-        }
-
+        $user = Auth::user();
         $wallet = PointWallet::ofUser($user->id);
 
-        try {
-            $wallet->spendPoints(
-                $product->points_required,
-                'redeem',
-                'product',
-                $product->id,
-                'แลกสินค้า: ' . $product->name
-            );
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 400);
+        $product = Product::where('is_active', true)
+            ->where('redeemable', true)
+            ->findOrFail($id);
+
+        if (! $product->points_required || $product->points_required <= 0) {
+            return back()->with('error', 'สินค้านี้ไม่สามารถแลกด้วยแต้มได้');
         }
 
-        return response()->json([
-            'message' => 'แลกสินค้าสำเร็จ',
-            'balance' => $wallet->fresh()->balance
-        ]);
+        try {
+            DB::transaction(function () use ($wallet, $product) {
+
+                $wallet->spendPoints(
+                    $product->points_required,
+                    PointTransaction::TYPE_REDEEM,
+                    PointTransaction::SOURCE_PRODUCT, // ✅ ถูกต้อง
+                    $product->id,
+                    'แลกสินค้า: ' . $product->name
+                );
+            });
+
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', 'แลกสินค้าเรียบร้อย');
     }
 
-    /**
-     * 🎁 แลกโปรโมชั่น
-     */
-    public function redeemPromotion(int $id): JsonResponse
-    {
-        $user = auth()->user();
+    /* ===============================
+     | ใช้โปรโมชั่น
+     =============================== */
+    public function redeemPromotion($id)
+{
+    $user = Auth::user();
+    $wallet = PointWallet::ofUser($user->id);
 
-        $promotion = Promotion::findOrFail($id);
+    $promotion = Promotion::where('is_active', true)->findOrFail($id);
 
-        if (! $promotion->is_active) {
-            return response()->json([
-                'message' => 'โปรโมชั่นนี้ยังไม่เปิดให้ใช้'
-            ], 403);
-        }
+    if (! $promotion->canRedeem($user)) {
+        return back()->with('error', 'คุณใช้โปรโมชั่นนี้ครบจำนวนแล้ว');
+    }
 
-        $wallet = PointWallet::ofUser($user->id);
+    DB::transaction(function () use ($promotion, $wallet, $user) {
 
-        try {
+        if ($promotion->type === 'redeem') {
             $wallet->spendPoints(
-                $promotion->points_required,
-                'redeem',
-                'promotion',
+                $promotion->points_value,
+                PointTransaction::TYPE_REDEEM,
+                PointTransaction::SOURCE_PROMOTION,
                 $promotion->id,
-                'แลกโปร: ' . $promotion->title
+                'ใช้โปรโมชั่น: ' . $promotion->title
             );
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 400);
         }
 
-        return response()->json([
-            'message' => 'แลกโปรโมชั่นสำเร็จ',
-            'balance' => $wallet->fresh()->balance
+        if ($promotion->type === 'reward') {
+            $wallet->addPoints(
+                $promotion->points_value,
+                PointTransaction::TYPE_REWARD,
+                PointTransaction::SOURCE_PROMOTION,
+                $promotion->id,
+                'รับแต้มจากโปรโมชั่น: ' . $promotion->title
+            );
+        }
+
+        // ✅ บันทึกทุกครั้ง
+        PromotionUsage::create([
+            'promotion_id' => $promotion->id,
+            'user_id'      => $user->id,
         ]);
-    }
+    });
+
+    return back()->with('success', 'ใช้โปรโมชั่นเรียบร้อย 🎉');
+}
+
 }

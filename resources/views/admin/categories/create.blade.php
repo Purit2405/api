@@ -20,7 +20,7 @@
                         <label class="block font-medium mb-1">ชื่อหมวดหมู่</label>
                         <input name="name"
                                class="w-full border rounded-lg p-2 focus:ring focus:ring-indigo-200"
-                               placeholder="เช่น อุปกรณ์ไอที"
+                               placeholder="Hot"
                                required>
                     </div>
 

@@ -6,8 +6,18 @@
     <div class="p-6 max-w-xl mx-auto">
         <div class="bg-white shadow rounded-xl p-6">
 
+            {{-- แจ้ง error --}}
+            @if ($errors->any())
+                <div class="mb-4 p-3 bg-red-100 text-red-700 rounded">
+                    {{ $errors->first() }}
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('admin.point-transactions.store') }}">
                 @csrf
+
+                {{-- ใช้เก็บสถานะว่าพบ user หรือไม่ --}}
+                <input type="hidden" id="user-found" value="0">
 
                 {{-- เบอร์โทร --}}
                 <div class="mb-4">
@@ -25,7 +35,7 @@
                     <p id="user-status" class="text-sm mt-1"></p>
                 </div>
 
-                {{-- ชื่อผู้ใช้ (แสดงอย่างเดียว) --}}
+                {{-- ชื่อผู้ใช้ --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">
                         ชื่อผู้ใช้งาน
@@ -38,7 +48,7 @@
                     >
                 </div>
 
-                {{-- แต้ม --}}
+                {{-- จำนวนแต้ม --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">
                         จำนวนแต้ม
@@ -46,6 +56,7 @@
                     <input
                         type="number"
                         name="points"
+                        min="1"
                         class="w-full rounded border-gray-300"
                         required
                     >
@@ -63,9 +74,12 @@
                     ></textarea>
                 </div>
 
+                {{-- ปุ่ม submit --}}
                 <button
                     type="submit"
-                    class="bg-indigo-600 text-white px-4 py-2 rounded"
+                    id="submit-btn"
+                    disabled
+                    class="bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed"
                 >
                     เพิ่มแต้ม
                 </button>
@@ -74,19 +88,36 @@
         </div>
     </div>
 
-    {{-- JS --}}
+    {{-- ================= JS ================= --}}
     <script>
-        const phoneInput = document.getElementById('phone');
-        const userNameInput = document.getElementById('user-name');
-        const statusText = document.getElementById('user-status');
+        const phoneInput   = document.getElementById('phone');
+        const userName     = document.getElementById('user-name');
+        const statusText   = document.getElementById('user-status');
+        const submitBtn    = document.getElementById('submit-btn');
+        const userFoundInp = document.getElementById('user-found');
 
         let timeout = null;
+
+        function disableSubmit() {
+            submitBtn.disabled = true;
+            submitBtn.className =
+                'bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed';
+            userFoundInp.value = 0;
+        }
+
+        function enableSubmit() {
+            submitBtn.disabled = false;
+            submitBtn.className =
+                'bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700';
+            userFoundInp.value = 1;
+        }
 
         phoneInput.addEventListener('input', () => {
             clearTimeout(timeout);
 
-            userNameInput.value = '';
+            userName.value = '';
             statusText.textContent = '';
+            disableSubmit();
 
             if (phoneInput.value.length < 9) return;
 
@@ -95,13 +126,20 @@
                     .then(res => res.json())
                     .then(data => {
                         if (data.found) {
-                            userNameInput.value = data.name;
+                            userName.value = data.name;
                             statusText.textContent = '✔ พบผู้ใช้';
                             statusText.className = 'text-green-600 text-sm';
+                            enableSubmit();
                         } else {
-                            statusText.textContent = '❌ ไม่พบผู้ใช้';
+                            statusText.textContent = '❌ ไม่พบผู้ใช้ในระบบ';
                             statusText.className = 'text-red-600 text-sm';
+                            disableSubmit();
                         }
+                    })
+                    .catch(() => {
+                        statusText.textContent = 'เกิดข้อผิดพลาด';
+                        statusText.className = 'text-red-600 text-sm';
+                        disableSubmit();
                     });
             }, 500);
         });

@@ -1,76 +1,140 @@
 <x-app-layout>
-<x-slot name="header">
-    <h2 class="font-bold text-xl">
-        เพิ่มโปรโมชั่น
-    </h2>
-</x-slot>
+    <x-slot name="header">
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                🎉 เพิ่มโปรโมชั่น
+            </h2>
 
-<div class="p-6 max-w-3xl mx-auto bg-white rounded shadow">
+            <a href="{{ route('admin.promotions.index') }}"
+               class="text-sm text-gray-600 hover:text-indigo-600">
+                ← กลับไปหน้ารายการโปรโมชั่น
+            </a>
+        </div>
+    </x-slot>
 
-<form method="POST"
-      action="{{ route('admin.promotions.store') }}"
-      enctype="multipart/form-data">
+    <div class="p-6 max-w-4xl mx-auto">
 
-@csrf
+        <form method="POST"
+              action="{{ route('admin.promotions.store') }}"
+              enctype="multipart/form-data"
+              class="bg-white shadow rounded-xl p-6 space-y-6">
+            @csrf
 
-{{-- ชื่อ --}}
-<input name="title"
-       class="w-full border p-2 mb-3"
-       placeholder="ชื่อโปรโมชั่น"
-       required>
+            {{-- ชื่อโปรโมชั่น --}}
+            <div>
+                <label class="block font-medium mb-1">
+                    ชื่อโปรโมชั่น <span class="text-red-500">*</span>
+                </label>
+                <input type="text"
+                       name="title"
+                       value="{{ old('title') }}"
+                       required
+                       class="w-full border rounded-lg p-2 focus:ring focus:ring-indigo-200">
+            </div>
 
-{{-- รายละเอียด --}}
-<textarea name="description"
-          class="w-full border p-2 mb-3"
-          placeholder="รายละเอียด"></textarea>
+            {{-- รายละเอียด --}}
+            <div>
+                <label class="block font-medium mb-1">
+                    รายละเอียด
+                </label>
+                <textarea name="description"
+                          rows="4"
+                          class="w-full border rounded-lg p-2 focus:ring focus:ring-indigo-200">{{ old('description') }}</textarea>
+            </div>
 
-{{-- แต้ม + ประเภท --}}
-<div class="grid grid-cols-2 gap-3 mb-3">
-    <input type="number"
-           name="points_value"
-           placeholder="จำนวนแต้ม"
-           class="border p-2"
-           required>
+            {{-- ประเภท + แต้ม --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-medium mb-1">
+                        ประเภท <span class="text-red-500">*</span>
+                    </label>
+                    <select name="type"
+                            required
+                            class="w-full border rounded-lg p-2 focus:ring focus:ring-indigo-200">
+                        <option value="reward">🎉 ให้แต้ม</option>
+                        <option value="redeem">🎁 ใช้แต้ม</option>
+                    </select>
+                </div>
 
-    <select name="type" class="border p-2">
-        <option value="reward">🎉 ให้แต้ม</option>
-        <option value="redeem">🎁 ใช้แต้ม</option>
-    </select>
-</div>
+                <div>
+                    <label class="block font-medium mb-1">
+                        จำนวนแต้ม <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number"
+                           name="points_value"
+                           min="1"
+                           value="{{ old('points_value') }}"
+                           required
+                           class="w-full border rounded-lg p-2 focus:ring focus:ring-indigo-200">
+                </div>
+            </div>
 
-<hr class="my-4">
+            {{-- จำกัดสิทธิ์ --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-medium mb-1">
+                        จำกัดต่อคน
+                    </label>
+                    <input type="number"
+                           name="max_per_user"
+                           value="{{ old('max_per_user') }}"
+                           class="w-full border rounded-lg p-2 focus:ring focus:ring-indigo-200">
+                </div>
 
-<h3 class="font-bold mb-2">จำกัดสิทธิ์การแลก</h3>
+                <div>
+                    <label class="block font-medium mb-1">
+                        จำกัดทั้งหมด
+                    </label>
+                    <input type="number"
+                           name="max_total"
+                           value="{{ old('max_total') }}"
+                           class="w-full border rounded-lg p-2 focus:ring focus:ring-indigo-200">
+                </div>
+            </div>
 
-<div class="grid grid-cols-2 gap-3">
-    <input type="number"
-           name="max_per_user"
-           placeholder="ต่อคน (ว่าง = ไม่จำกัด)"
-           class="border p-2">
+            {{-- รูป --}}
+            <div>
+                <label class="block font-medium mb-1">
+                    รูปโปรโมชั่น
+                </label>
+                <input type="file"
+                       name="image"
+                       accept="image/*"
+                       class="block w-full text-sm text-gray-600
+                              file:mr-4 file:py-2 file:px-4
+                              file:rounded-lg file:border-0
+                              file:text-sm file:font-semibold
+                              file:bg-indigo-50 file:text-indigo-700
+                              hover:file:bg-indigo-100">
+            </div>
 
-    <input type="number"
-           name="max_total"
-           placeholder="ทั้งระบบ (ว่าง = ไม่จำกัด)"
-           class="border p-2">
-</div>
+            {{-- สถานะ --}}
+            <div class="space-y-3">
+                <input type="hidden" name="is_active" value="0">
+                <label class="flex items-center gap-2">
+                    <input type="checkbox"
+                           name="is_active"
+                           value="1"
+                           checked
+                           class="rounded border-gray-300 text-indigo-600">
+                    <span>เปิดใช้งานโปรโมชั่น</span>
+                </label>
+            </div>
 
-{{-- สถานะ --}}
-<div class="mt-4">
-    <label class="flex items-center gap-2">
-        <input type="checkbox" name="is_active" value="1" checked>
-        <span>เปิดใช้งาน</span>
-    </label>
-</div>
+            {{-- ปุ่ม --}}
+            <div class="flex justify-end gap-3 pt-4 border-t">
+                <a href="{{ route('admin.promotions.index') }}"
+                   class="px-4 py-2 rounded-lg border text-gray-600 hover:bg-gray-100">
+                    ยกเลิก
+                </a>
 
-{{-- รูป --}}
-<div class="mt-4">
-    <input type="file" name="image">
-</div>
+                <button type="submit"
+                        class="px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow">
+                    💾 บันทึกโปรโมชั่น
+                </button>
+            </div>
 
-<button class="mt-6 bg-indigo-600 text-white px-6 py-2 rounded">
-    บันทึก
-</button>
+        </form>
 
-</form>
-</div>
+    </div>
 </x-app-layout>

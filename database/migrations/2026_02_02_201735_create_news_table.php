@@ -10,12 +10,29 @@ return new class extends Migration {
         Schema::create('news', function (Blueprint $table) {
             $table->id();
 
+            // ลำดับการแสดง (ยิ่งน้อยยิ่งมาก่อน)
+            $table->integer('position')
+                  ->default(0)
+                  ->comment('ลำดับการแสดงข่าว');
+
             $table->string('title');
+            $table->text('content')->nullable();
+
             $table->string('image')->nullable();
+
+            // วันที่เผยแพร่ (ไม่บังคับ)
             $table->date('publish_date')->nullable();
-            $table->boolean('is_active')->default(true);
+
+            // สถานะเปิด / ปิด
+            $table->boolean('is_active')
+                  ->default(true);
 
             $table->timestamps();
+
+            /* ===== Index เพื่อประสิทธิภาพ ===== */
+            
+            $table->index('is_active');
+            $table->index('publish_date');
         });
     }
 

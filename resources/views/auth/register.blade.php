@@ -9,55 +9,105 @@
         <form method="POST" action="{{ route('register') }}">
             @csrf
 
+            {{-- Name --}}
             <div>
-                <x-label for="name" value="{{ __('Name') }}" />
-                <x-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
+                <x-label for="name" value="ชื่อผู้ใช้" />
+                <x-input
+                    id="name"
+                    class="block mt-1 w-full"
+                    type="text"
+                    name="name"
+                    value="{{ old('name') }}"
+                    required
+                    autofocus
+                />
             </div>
 
+            {{-- Email --}}
             <div class="mt-4">
-                <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
+                <x-label for="email" value="อีเมล" />
+                <x-input
+                    id="email"
+                    class="block mt-1 w-full"
+                    type="email"
+                    name="email"
+                    value="{{ old('email') }}"
+                    required
+                />
             </div>
-            
+
+            {{-- Phone --}}
             <div class="mt-4">
                 <x-label for="phone" value="เบอร์โทรศัพท์" />
-                <x-input id="phone" class="block mt-1 w-full" type="text" name="phone" value="{{ old('phone') }}"  required />
+                <x-input
+                    id="phone"
+                    class="block mt-1 w-full"
+                    type="text"
+                    name="phone"
+                    value="{{ old('phone') }}"
+                    required
+                />
             </div>
 
+            {{-- Password --}}
             <div class="mt-4">
-                <x-label for="password" value="{{ __('Password') }}" />
-                <x-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
+                <x-label for="password" value="รหัสผ่าน" />
+                <x-input
+                    id="password"
+                    class="block mt-1 w-full"
+                    type="password"
+                    name="password"
+                    required
+                />
             </div>
 
+            {{-- Confirm Password --}}
             <div class="mt-4">
-                <x-label for="password_confirmation" value="{{ __('Confirm Password') }}" />
-                <x-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" required autocomplete="new-password" />
+                <x-label for="password_confirmation" value="ยืนยันรหัสผ่าน" />
+                <x-input
+                    id="password_confirmation"
+                    class="block mt-1 w-full"
+                    type="password"
+                    name="password_confirmation"
+                    required
+                />
             </div>
 
+            {{-- Terms & Privacy --}}
             @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
                 <div class="mt-4">
-                    <x-label for="terms">
-                        <div class="flex items-center">
-                            <x-checkbox name="terms" id="terms" required />
+                    <label for="terms" class="flex items-center">
+                        <x-checkbox name="terms" id="terms" required />
 
-                            <div class="ms-2">
-                                {!! __('I agree to the :terms_of_service and :privacy_policy', [
-                                        'terms_of_service' => '<a target="_blank" href="'.route('terms.show').'" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">'.__('Terms of Service').'</a>',
-                                        'privacy_policy' => '<a target="_blank" href="'.route('policy.show').'" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">'.__('Privacy Policy').'</a>',
-                                ]) !!}
-                            </div>
-                        </div>
-                    </x-label>
+                        <span class="ms-2 text-sm text-gray-600">
+                            ฉันยอมรับ
+                            <a href="{{ route('terms') }}"
+                               target="_blank"
+                               class="underline hover:text-gray-900">
+                                ข้อตกลงการใช้งาน
+                            </a>
+                            และ
+                            <a href="{{ route('privacy') }}"
+                               target="_blank"
+                               class="underline hover:text-gray-900">
+                                นโยบายความเป็นส่วนตัว
+                            </a>
+                        </span>
+                    </label>
                 </div>
             @endif
 
+            {{-- Actions --}}
             <div class="flex items-center justify-end mt-4">
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                    {{ __('Already registered?') }}
+                <a
+                    class="underline text-sm text-gray-600 hover:text-gray-900"
+                    href="{{ route('login') }}"
+                >
+                    มีบัญชีอยู่แล้ว?
                 </a>
 
                 <x-button class="ms-4">
-                    {{ __('Register') }}
+                    สมัครสมาชิก
                 </x-button>
             </div>
         </form>

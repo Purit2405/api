@@ -34,8 +34,7 @@ class PromotionController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')
-                ->store('promotions', 'public');
+            $data['image'] = $request->file('image')->store('promotions', 'public');
         }
 
         Promotion::create($data);
@@ -67,13 +66,36 @@ class PromotionController extends Controller
                 Storage::disk('public')->delete($promotion->image);
             }
 
-            $data['image'] = $request->file('image')
-                ->store('promotions', 'public');
+            $data['image'] = $request->file('image')->store('promotions', 'public');
         }
 
         $promotion->update($data);
 
         return redirect()->route('admin.promotions.index')
             ->with('success', 'อัปเดตเรียบร้อย');
+    }
+
+    // ✅ เพิ่ม
+    public function toggle(Promotion $promotion)
+    {
+        $promotion->update([
+            'is_active' => ! $promotion->is_active
+        ]);
+
+        return redirect()->route('admin.promotions.index')
+            ->with('success', 'เปลี่ยนสถานะโปรโมชั่นเรียบร้อย');
+    }
+
+    // ✅ เพิ่ม
+    public function destroy(Promotion $promotion)
+    {
+        if ($promotion->image) {
+            Storage::disk('public')->delete($promotion->image);
+        }
+
+        $promotion->delete();
+
+        return redirect()->route('admin.promotions.index')
+            ->with('success', 'ลบโปรโมชั่นเรียบร้อย');
     }
 }
