@@ -5,11 +5,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
-/*
-|--------------------------------------------------------------------------
-| MODELS
-|--------------------------------------------------------------------------
-*/
 use App\Models\User;
 use App\Models\PointWallet;
 
@@ -20,20 +15,27 @@ use App\Models\PointWallet;
 */
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\NewsController;
-use App\Http\Controllers\Api\PointController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\PointController;
+use App\Http\Controllers\Api\PointTransactionController;
+use App\Http\Controllers\Api\Auth\ForgotPasswordController;
+/*
+|--------------------------------------------------------------------------
+| REDEEM API (PROTECTED)
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\Api\RedeemProductController;
+use App\Http\Controllers\Api\RedeemPromotionController;
 
 /*
 |--------------------------------------------------------------------------
 | AUTH API (PUBLIC)
 |--------------------------------------------------------------------------
-| สมัคร / เข้าสู่ระบบ
-|--------------------------------------------------------------------------
 */
 Route::prefix('auth')->group(function () {
 
-    // POST /api/auth/register
+    // ✅ REGISTER
     Route::post('/register', function (Request $request) {
 
         $validated = $request->validate([
@@ -51,6 +53,7 @@ Route::prefix('auth')->group(function () {
             'role'     => 'user',
         ]);
 
+        // สร้าง wallet
         PointWallet::firstOrCreate(
             ['user_id' => $user->id],
             ['balance' => 0]
@@ -68,20 +71,19 @@ Route::prefix('auth')->group(function () {
             'success' => true,
             'message' => 'สมัครสมาชิกสำเร็จ',
             'data' => [
-                'user' => $user->only('id', 'name', 'email', 'phone'),
+                'user' => $user->only('id','name','email','phone'),
                 'token' => $token->plainTextToken,
                 'expires_at' => $expiresAt,
             ]
         ], 201);
     });
 
-    // POST /api/auth/login
+    // ✅ LOGIN
     Route::post('/login', function (Request $request) {
 
         $validated = $request->validate([
-            'email'       => 'required|email',
-            'password'    => 'required',
-            'remember_me' => 'nullable|boolean',
+            'email'    => 'required|email',
+            'password' => 'required',
         ]);
 
         $user = User::where('email', $validated['email'])->first();
@@ -95,9 +97,7 @@ Route::prefix('auth')->group(function () {
 
         $user->tokens()->delete();
 
-        $expiresAt = $request->boolean('remember_me')
-            ? Carbon::now()->addYear()
-            : Carbon::now()->addMonth();
+        $expiresAt = Carbon::now()->addMonth();
 
         $token = $user->createToken('android');
         $token->accessToken->expires_at = $expiresAt;
@@ -107,12 +107,15 @@ Route::prefix('auth')->group(function () {
             'success' => true,
             'message' => 'เข้าสู่ระบบสำเร็จ',
             'data' => [
-                'user' => $user->only('id', 'name', 'email', 'phone'),
+                'user' => $user->only('id','name','email','phone'),
                 'token' => $token->plainTextToken,
                 'expires_at' => $expiresAt,
             ]
         ]);
     });
+
+    // ✅ FORGOT PASSWORD
+    Route::post('/forgot-password', ForgotPasswordController::class);
 });
 
 /*
@@ -122,15 +125,13 @@ Route::prefix('auth')->group(function () {
 */
 Route::middleware('auth:sanctum')->prefix('user')->group(function () {
 
-    // ✅ GET /api/user/me
-    Route::get('/me', function (Request $request) {
-        return response()->json([
-            'success' => true,
-            'data' => $request->user(),
-        ]);
-    });
+    // 👤 PROFILE
+    Route::get('/me', fn (Request $request) => response()->json([
+        'success' => true,
+        'data' => $request->user(),
+    ]));
 
-    // POST /api/user/logout
+    // 🚪 LOGOUT
     Route::post('/logout', function (Request $request) {
         $request->user()->currentAccessToken()->delete();
 
@@ -140,9 +141,31 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
         ]);
     });
 
-    // POINT SYSTEM
+    // 💰 POINT
     Route::get('/points/wallet', [PointController::class, 'wallet']);
-    Route::get('/points/history', [PointController::class, 'history']);
+    Route::get('/points/history', [PointTransactionController::class, 'index']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| REDEEM API (PROTECTED)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:sanctum')->group(function () {
+
+    // 🛒 แลกสินค้า
+    // POST /api/redeem/product/{product}
+    Route::post(
+        '/redeem/product/{product}',
+        [RedeemProductController::class, 'redeem']
+    );
+
+    // 🎁 แลกโปรโมชั่น
+    // POST /api/redeem/promotion/{promotion}
+    Route::post(
+        '/redeem/promotion/{promotion}',
+        [RedeemPromotionController::class, 'redeem']
+    );
 });
 
 /*
