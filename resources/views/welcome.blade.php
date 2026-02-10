@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Brew Haven | ประสบการณ์กาแฟที่ดีที่สุด</title>
+    <title>Kaewfa Coffee | ประสบการณ์กาแฟที่ดีที่สุด</title>
 
     <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -40,7 +40,7 @@
 
         <!-- LOGO -->
         <a href="{{ url('/') }}" class="text-2xl font-serif font-bold text-indigo-600">
-            The Brew Haven
+            Kaewfa Coffee
         </a>
 
         <!-- MENU -->
@@ -105,7 +105,7 @@
     </h2>
 
     <p class="max-w-2xl mx-auto text-lg text-gray-600 mb-10">
-        The Brew Haven คัดสรรเมล็ดกาแฟคุณภาพชั้นเลิศจากดอยสูง 
+        Kaewfa Coffee คัดสรรเมล็ดกาแฟคุณภาพชั้นเลิศจากดอยสูง 
         พร้อมประสบการณ์การดื่มกาแฟที่อบอุ่นและพรีเมียมในทุกแก้ว
     </p>
 
@@ -122,7 +122,7 @@
 <!-- ===== ABOUT ===== -->
 <section id="about" class="py-24 bg-white">
     <div class="max-w-6xl mx-auto px-6 text-center">
-        <h3 class="text-3xl font-serif font-bold mb-6">เกี่ยวกับ The Brew Haven</h3>
+        <h3 class="text-3xl font-serif font-bold mb-6">เกี่ยวกับ Kaewfa Coffee</h3>
         <div class="w-16 h-1 bg-indigo-600 mx-auto mb-8 rounded-full"></div>
         <p class="text-gray-600 max-w-3xl mx-auto text-lg leading-relaxed">
             เราเชื่อว่ากาแฟไม่ใช่แค่เครื่องดื่ม แต่คือช่วงเวลาพักผ่อนและแรงบันดาลใจ 
@@ -221,8 +221,8 @@
                                 <i data-lucide="map-pin"></i>
                             </div>
                             <div>
-                                <h5 class="font-bold text-gray-900">The Brew Haven (สาขาหลัก)</h5>
-                                <p class="text-gray-600">123 ถนนสุขุมวิท ซอย 24 แขวงคลองเตย <br>เขตคลองเตย กรุงเทพมหานคร 10110</p>
+                                <h5 class="font-bold text-gray-900">Kaewfa Coffee</h5>
+                                <p class="text-gray-600">9 ถนน ทหาร แขวงถนนนครไชยศรี เขตดุสิต กรุงเทพมหานคร 10300</p>
                             </div>
                         </div>
 
@@ -256,9 +256,9 @@
                             <i data-lucide="map-pin" class="w-8 h-8 fill-indigo-100"></i>
                         </div>
                         <p class="font-bold text-gray-800">คลิกเพื่อดู Google Maps</p>
-                        <p class="text-sm text-gray-500">123 Sukhumvit 24, Bangkok</p>
+                        <p class="text-sm text-gray-500">9 ถนน ทหาร แขวงถนนนครไชยศรี เขตดุสิต กรุงเทพมหานคร 10300</p>
                     </div>
-                    <a href="https://maps.google.com" target="_blank" class="absolute inset-0 z-20 hover:bg-black/5 transition"></a>
+                    <a href="https://maps.app.goo.gl/P3bh2QqYhjQ1UD65A" target="_blank" class="absolute inset-0 z-20 hover:bg-black/5 transition"></a>
                 </div>
             </div>
 
@@ -269,7 +269,7 @@
 <!-- ===== FOOTER ===== -->
 <footer class="py-16 bg-white border-t border-gray-100">
     <div class="max-w-7xl mx-auto px-6 text-center">
-        <h2 class="text-2xl font-serif font-bold text-indigo-600 mb-8">The Brew Haven</h2>
+        <h2 class="text-2xl font-serif font-bold text-indigo-600 mb-8">Kaewfa Coffee</h2>
         
         <div class="flex justify-center space-x-8 mb-8">
             <a href="#" class="text-gray-400 hover:text-indigo-600 transition"><i data-lucide="facebook"></i></a>
@@ -277,7 +277,7 @@
             <a href="#" class="text-gray-400 hover:text-indigo-600 transition"><i data-lucide="twitter"></i></a>
         </div>
 
-        <p class="text-gray-500 mb-4">&copy; 2024 The Brew Haven. สงวนลิขสิทธิ์ทุกประการ</p>
+        <p class="text-gray-500 mb-4">&copy; 2024 Kaewfa Coffee. สงวนลิขสิทธิ์ทุกประการ</p>
         
         <div class="space-x-4 text-sm font-medium text-gray-400">
             <a href="#" class="hover:text-indigo-600 transition underline underline-offset-4">ข้อตกลงการใช้งาน</a>

@@ -23,7 +23,7 @@
     <div class="py-10">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            {{-- 🔔 แจ้งเตือน --}}
+            {{-- แจ้งเตือน --}}
             @if (session('success'))
                 <div class="p-4 rounded-xl bg-green-100 text-green-700 shadow">
                     ✅ {{ session('success') }}
@@ -36,7 +36,7 @@
                 </div>
             @endif
 
-            {{-- กล่องหัว --}}
+            {{-- หัวตาราง --}}
             <div class="bg-white shadow rounded-2xl p-6 border">
                 <h3 class="text-lg font-semibold text-gray-700">
                     📦 รายการสินค้า
@@ -46,7 +46,7 @@
                 </p>
             </div>
 
-            {{-- ตาราง --}}
+            {{-- ตารางสินค้า --}}
             <div class="bg-white shadow-xl rounded-2xl overflow-x-auto border">
                 <table class="w-full text-sm">
                     <thead class="bg-gray-100 text-gray-700">
@@ -64,7 +64,7 @@
                     @forelse($products as $p)
 
                         @php
-                            // ❗ หมวดหมู่ปิด + สินค้าปิด → ห้ามเปิด
+                            // หมวดปิด + สินค้าปิด → ห้ามเปิด
                             $categoryInactive = ! $p->is_active
                                 && (! $p->category || ! $p->category->is_active);
                         @endphp
@@ -120,6 +120,14 @@
                             {{-- จัดการ --}}
                             <td class="p-3 border text-center space-y-2">
 
+                                {{-- ✏️ แก้ไขสินค้า --}}
+                                <a href="{{ route('admin.products.edit', $p) }}"
+                                   class="block w-full px-3 py-1.5 text-xs rounded-lg
+                                          bg-yellow-400 text-white
+                                          hover:bg-yellow-500 transition shadow">
+                                    ✏️ แก้ไขสินค้า
+                                </a>
+
                                 {{-- เปิด / ปิดสินค้า --}}
                                 <form method="POST" action="{{ route('admin.products.toggle', $p) }}">
                                     @csrf
@@ -128,9 +136,6 @@
                                     <button
                                         type="submit"
                                         @disabled($categoryInactive)
-                                        title="{{ $categoryInactive
-                                            ? 'หมวดหมู่ของสินค้านี้ถูกปิดอยู่ ต้องเปิดหมวดหมู่ก่อน'
-                                            : '' }}"
                                         class="w-full px-3 py-1.5 text-xs rounded-lg transition shadow
                                         @if($categoryInactive)
                                             bg-gray-300 text-gray-500 cursor-not-allowed
@@ -155,9 +160,6 @@
                                     <button
                                         type="submit"
                                         @disabled($categoryInactive)
-                                        title="{{ $categoryInactive
-                                            ? 'ไม่สามารถเปิดแลกแต้มได้ เนื่องจากหมวดหมู่ถูกปิด'
-                                            : '' }}"
                                         class="w-full px-3 py-1.5 text-xs rounded-lg transition shadow
                                         @if($categoryInactive)
                                             bg-gray-300 text-gray-500 cursor-not-allowed
