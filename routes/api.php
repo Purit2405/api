@@ -20,6 +20,9 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PointController;
 use App\Http\Controllers\Api\PointTransactionController;
 use App\Http\Controllers\Api\Auth\ForgotPasswordController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\PromotionController;
+
 /*
 |--------------------------------------------------------------------------
 | REDEEM API (PROTECTED)
@@ -182,4 +185,19 @@ Route::prefix('public')->group(function () {
 
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/categories', [CategoryController::class, 'index']);
+        Route::get('/promotions', [PromotionController::class, 'index']);
+
 });
+
+Route::middleware('auth:sanctum')->get('/user/profile', function (Request $request) {
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'name'  => $request->user()->name,
+            'phone' => $request->user()->phone,
+        ]
+    ]);
+});
+
+
+

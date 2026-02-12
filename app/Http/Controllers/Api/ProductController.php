@@ -4,12 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    /**
-     * GET /api/public/products
-     */
     public function index()
     {
         $products = Product::query()
@@ -23,14 +21,10 @@ class ProductController extends Controller
                 'description' => $p->description,
                 'price'       => (float) $p->price,
                 'image'       => $p->image
-                    ? asset('storage/products/' . $p->image)
+                    ? asset('storage/' . $p->image)
                     : null,
-
-                // แต้ม
                 'redeemable'      => (bool) $p->redeemable,
                 'points_required' => $p->points_required,
-
-                // หมวดหมู่
                 'category' => $p->category ? [
                     'id'   => $p->category->id,
                     'name' => $p->category->name,
@@ -39,7 +33,7 @@ class ProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $products,
+            'data'    => $products,
         ]);
     }
 }
